@@ -15,6 +15,7 @@
     loading?: boolean;
     hintText?: string;
     editing?: boolean;
+    clearOnDestroy?: boolean;
   }
 
   let {
@@ -25,6 +26,7 @@
     loading = $bindable(false),
     hintText = translate('workflows.signal-payload-input-label-hint'),
     editing = true,
+    clearOnDestroy = true,
   }: Props = $props();
 
   const isValidInput = (value: string) => {
@@ -58,7 +60,9 @@
     input = uploadInput;
   };
 
-  onDestroy(clearValues);
+  onDestroy(() => {
+    if (clearOnDestroy) clearValues();
+  });
 </script>
 
 <div class="flex flex-col gap-2">
