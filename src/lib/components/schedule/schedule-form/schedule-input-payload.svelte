@@ -1,8 +1,8 @@
 <script lang="ts">
   import { get, type Writable, writable } from 'svelte/store';
 
+  import MultiPayloadInputWithEncoding from '$lib/components/multi-payload-input-with-encoding.svelte';
   import PayloadDecoder from '$lib/components/payload/payload-decoder.svelte';
-  import PayloadInputWithEncoding from '$lib/components/payload-input-with-encoding.svelte';
   import Button from '$lib/holocene/button.svelte';
   import { translate } from '$lib/i18n/translate';
   import {
@@ -13,12 +13,13 @@
   import {
     base64ParsePayloadMetadata,
     isParsedPayload,
+    type ParsedPayload,
   } from '$lib/utilities/decode-payload';
   import type { DecodedPayloadResult } from '$lib/utilities/decode-payload-result';
   import { stringifyWithBigInt } from '$lib/utilities/parse-with-big-int';
 
   interface Props {
-    input: string;
+    inputs: string[];
     editInput: boolean;
     encoding?: PayloadInputEncoding;
     messageType: string;
@@ -27,7 +28,7 @@
   }
 
   let {
-    input = $bindable(),
+    inputs = $bindable(),
     editInput = $bindable(),
     encoding = $bindable('json/plain'),
     messageType = $bindable(),
@@ -44,16 +45,20 @@
     if (val !== encoding) encoding = val;
   });
 
-  let initialInput = $state('');
+  let initialInputs = $state<string[]>(['']);
   let initialEncoding = $state<PayloadInputEncoding>('json/plain');
   let initialMessageType = $state('');
-  let loading = $state(true);
 
   const setInitialInput = (result: DecodedPayloadResult): void => {
-    if (result && result[0] && isParsedPayload(result[0].decodedValue)) {
-      initialInput = stringifyWithBigInt(result[0].decodedValue.data) ?? '';
+    const decodedInputs = (result ?? [])
+      .map((entry) => entry.decodedValue)
+      .filter((value): value is ParsedPayload => isParsedPayload(value))
+      .map((value) => stringifyWithBigInt(value.data) ?? '');
 
-      input = initialInput;
+    if (decodedInputs.length) {
+      initialInputs = decodedInputs;
+      inputs = decodedInputs;
+
       let currentEncoding: PayloadInputEncoding = 'json/plain';
       let currentMessageType = '';
 
@@ -75,14 +80,12 @@
         }
       }
     }
-
-    loading = false;
   };
 
   const handleEdit = () => {
     if (editInput) {
       editInput = false;
-      input = initialInput;
+      inputs = initialInputs;
       encoding = initialEncoding;
       messageType = initialMessageType;
     } else {
@@ -94,16 +97,11 @@
 <div class="flex flex-col gap-1">
   <PayloadDecoder value={payloads ?? {}} onDecode={setInitialInput}>
     {#snippet children(_decodedValue)}
-      <PayloadInputWithEncoding
-        bind:input
+      <MultiPayloadInputWithEncoding
+        bind:inputs
         encoding={encodingStore}
         bind:messageType
-        bind:loading
         editing={editInput}
-        payloadLabel="JSON Data"
-        placeholder={'{"key": "value"}'}
-        id="schedule-payload-input"
-        copyable={true}
       >
         {#snippet action()}
           <div class:hidden={!showEditActions}>
@@ -114,7 +112,7 @@
             </Button>
           </div>
         {/snippet}
-      </PayloadInputWithEncoding>
+      </MultiPayloadInputWithEncoding>
     {/snippet}
   </PayloadDecoder>
 </div>
