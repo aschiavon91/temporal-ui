@@ -125,7 +125,7 @@
       workflowType: form.workflowType,
       workflowId: form.workflowId,
       taskQueue: form.taskQueue,
-      ...(form.editInput && { input: form.input }),
+      ...(form.editInput && { inputs: form.inputs }),
       encoding: $encoding,
       messageType: form.messageType,
       hour: form.hour,
@@ -210,7 +210,7 @@
           required
         />
         <ScheduleInputPayload
-          bind:input={$form.input}
+          bind:inputs={$form.inputs}
           bind:editInput={$form.editInput}
           {encoding}
           bind:messageType={$form.messageType}

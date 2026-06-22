@@ -12,10 +12,8 @@ export const scheduleFormSchema = z.object({
   workflowType: z.string().min(1, 'Workflow type is required'),
   workflowId: z.string().min(1, 'Workflow ID is required'),
   taskQueue: z.string().min(1, 'Task queue is required'),
-  input: z
-    .string()
-    .optional()
-    .refine(
+  inputs: z.array(
+    z.string().refine(
       (val) => {
         if (!val || val.trim() === '') return true;
         try {
@@ -29,6 +27,7 @@ export const scheduleFormSchema = z.object({
         message: 'Input must be valid JSON',
       },
     ),
+  ),
   editInput: z.boolean(),
   encoding: z.enum(['json/plain', 'json/protobuf'] as const),
   messageType: z.string().optional(),
@@ -94,7 +93,7 @@ export const getDefaultValues = (params: {
     workflowType: schedule?.action?.startWorkflow?.workflowType?.name ?? '',
     workflowId: schedule?.action?.startWorkflow?.workflowId ?? '',
     taskQueue: schedule?.action?.startWorkflow?.taskQueue?.name ?? '',
-    input: '',
+    inputs: [''],
     editInput: !schedule,
     encoding: 'json/plain',
     messageType: '',
