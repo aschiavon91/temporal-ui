@@ -99,9 +99,7 @@ test.describe('Schedules List with schedules', () => {
 
     await page.goto(scheduleEditUrl);
 
-    const payloadInput = page
-      .locator('#schedule-payload-input')
-      .getByRole('textbox');
+    const payloadInput = page.locator('#input-0').getByRole('textbox');
     await expect(payloadInput).toContainText('"message"');
 
     await page.getByRole('button', { name: 'Edit' }).click();
@@ -119,9 +117,7 @@ test.describe('Schedules List with schedules', () => {
 
     await page.goto(scheduleEditUrl);
 
-    const payloadInput = page
-      .locator('#schedule-payload-input')
-      .getByRole('textbox');
+    const payloadInput = page.locator('#input-0').getByRole('textbox');
     await expect(payloadInput).toContainText('"hello"');
     await expect(page.getByText('Input must be valid JSON')).toBeHidden();
 
