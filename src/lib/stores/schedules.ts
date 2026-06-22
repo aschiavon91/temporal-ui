@@ -13,7 +13,10 @@ import type {
   SchedulePresetsParameters,
   ScheduleSpecParameters,
 } from '$lib/types/schedule';
-import { encodePayloads } from '$lib/utilities/encode-payload';
+import {
+  encodeMultiplePayloads,
+  encodePayloads,
+} from '$lib/utilities/encode-payload';
 import { stringifyWithBigInt } from '$lib/utilities/parse-with-big-int';
 import { routeForSchedule, routeForSchedules } from '$lib/utilities/route-for';
 import {
@@ -93,7 +96,7 @@ export const submitCreateSchedule = async ({
     workflowId,
     workflowType,
     taskQueue,
-    input,
+    inputs,
     encoding,
     messageType,
     searchAttributes,
@@ -102,9 +105,13 @@ export const submitCreateSchedule = async ({
 
   let payloads;
 
-  if (input) {
+  if (inputs?.some(Boolean)) {
     try {
-      payloads = await encodePayloads({ input, encoding, messageType });
+      payloads = await encodeMultiplePayloads({
+        inputs,
+        encoding,
+        messageType,
+      });
     } catch (e) {
       error.set(`${translate('data-encoder.encode-error')}: ${e?.message}`);
       return;
@@ -182,7 +189,7 @@ export const submitEditSchedule = async (
     workflowId,
     workflowType,
     taskQueue,
-    input,
+    inputs,
     encoding,
     messageType,
     searchAttributes,
@@ -191,9 +198,13 @@ export const submitEditSchedule = async (
 
   let payloads;
 
-  if (input) {
+  if (inputs?.some(Boolean)) {
     try {
-      payloads = await encodePayloads({ input, encoding, messageType });
+      payloads = await encodeMultiplePayloads({
+        inputs,
+        encoding,
+        messageType,
+      });
     } catch (e) {
       error.set(`${translate('data-encoder.encode-error')}: ${e?.message}`);
       return;
@@ -212,7 +223,9 @@ export const submitEditSchedule = async (
           workflowId,
           workflowType: { name: workflowType },
           taskQueue: { name: taskQueue },
-          ...(input !== undefined && { input: payloads ? { payloads } : null }),
+          ...(inputs !== undefined && {
+            input: payloads ? { payloads } : null,
+          }),
           searchAttributes: getSearchAttributes(workflowSearchAttributes),
         },
       },

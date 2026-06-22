@@ -39,7 +39,7 @@ export type ScheduleActionParameters = {
   workflowType: string;
   workflowId: string;
   taskQueue: string;
-  input: string;
+  inputs: string[];
   encoding: PayloadInputEncoding;
   messageType?: string;
   searchAttributes: SearchAttributesSchema;
