@@ -874,9 +874,10 @@ export const fetchInitialValuesForStartWorkflow = async ({
       }
     }
 
-    const inputs = decodedInputs.map((decodedInput) =>
+    const decodedInputStrings = decodedInputs.map((decodedInput) =>
       decodedInput?.data ? stringifyWithBigInt(decodedInput.data) : '',
     );
+    const inputs = decodedInputStrings.length ? decodedInputStrings : [''];
 
     let encoding: PayloadInputEncoding = 'json/plain';
     let messageType = '';

@@ -251,4 +251,60 @@ test.describe('Schedules List with schedules', () => {
     await expect(payloadInput).toContainText('"hello"');
     await expect(page.getByText('Input must be valid JSON')).toBeHidden();
   });
+
+  test('loads, edits, and cancels a schedule with multiple input payloads', async ({
+    page,
+  }) => {
+    const pageErrors: Error[] = [];
+    page.on('pageerror', (error) => pageErrors.push(error));
+    await mockScheduleApi(page, {
+      ...mockSchedule,
+      schedule: {
+        ...mockSchedule.schedule,
+        action: {
+          ...mockSchedule.schedule.action,
+          startWorkflow: {
+            ...mockSchedule.schedule.action.startWorkflow,
+            input: {
+              payloads: [
+                {
+                  metadata: { encoding: 'anNvbi9wbGFpbg==' },
+                  data: 'Im9uZSI=',
+                },
+                {
+                  metadata: { encoding: 'anNvbi9wbGFpbg==' },
+                  data: 'InR3byI=',
+                },
+                {
+                  metadata: { encoding: 'anNvbi9wbGFpbg==' },
+                  data: 'InRocmVlIg==',
+                },
+              ],
+            },
+          },
+        },
+      },
+    });
+
+    await page.goto(scheduleEditUrl);
+
+    await expect(page.locator('#input-0').getByRole('textbox')).toContainText(
+      '"one"',
+    );
+    await expect(page.locator('#input-1').getByRole('textbox')).toContainText(
+      '"two"',
+    );
+    await expect(page.locator('#input-2').getByRole('textbox')).toContainText(
+      '"three"',
+    );
+
+    await page.getByRole('button', { name: 'Edit', exact: true }).click();
+    await page.getByTestId('remove-input-0').click();
+    await page.getByTestId('remove-input-0').click();
+    await expect(page.locator('[id^="input-"] .cm-content')).toHaveCount(1);
+
+    await page.getByRole('button', { name: 'Cancel', exact: true }).click();
+    await expect(page.locator('[id^="input-"] .cm-content')).toHaveCount(3);
+    expect(pageErrors).toHaveLength(0);
+  });
 });

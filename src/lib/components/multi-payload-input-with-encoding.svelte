@@ -35,14 +35,18 @@
     action,
   }: Props = $props();
 
-  let nextId = inputs.length;
-  let ids = $state(inputs.map((_, i) => i));
+  let nextId = 0;
+  const ids: number[] = [];
 
-  $effect(() => {
-    if (ids.length !== inputs.length) {
-      ids = inputs.map((_, i) => ids[i] ?? nextId++);
+  const getKey = (index: number): number => {
+    if (ids.length > inputs.length) {
+      ids.length = inputs.length;
     }
-  });
+    while (ids.length <= index) {
+      ids.push(nextId++);
+    }
+    return ids[index];
+  };
 
   $effect(() => {
     if ($encoding === 'json/plain' && messageType) {
@@ -51,20 +55,20 @@
   });
 
   const addInput = () => {
+    ids.push(nextId++);
     inputs = [...inputs, ''];
-    ids = [...ids, nextId++];
   };
 
   const removeInput = (index: number) => {
+    ids.splice(index, 1);
     inputs = inputs.filter((_, i) => i !== index);
-    ids = ids.filter((_, i) => i !== index);
   };
 </script>
 
 <div>
   <h5 class="pb-1 text-sm font-medium">{label}</h5>
   <Card class="flex flex-col gap-2">
-    {#each inputs as _, index (ids[index])}
+    {#each inputs as _, index (getKey(index))}
       <div class="flex items-start gap-2">
         <div class="grow">
           <PayloadInput
